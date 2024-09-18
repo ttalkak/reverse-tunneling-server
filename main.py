@@ -13,6 +13,16 @@ app = FastAPI()
 
 @app.post("/create")
 def create_subdomain(domain: DomainCreate, db: Session = Depends(get_db)):
+
+    existing_domain = db.query(Domain).filter(Domain.subdomain == domain.subdomain).first()
+
+    if existing_domain:
+           return{
+                  "identifier" : existing_domain.identifier,
+                  "key" : existing_domain.token,
+                  "sudomain" : existing_domain.subdomain
+           }
+    
     key = str(uuid4()).replace("-", "")
     
     create = Domain(
