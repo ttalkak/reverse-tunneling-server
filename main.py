@@ -14,7 +14,7 @@ app = FastAPI()
 @app.post("/create")
 def create_subdomain(domain: DomainCreate, db: Session = Depends(get_db)):
 
-    existing_domain = db.query(Domain).filter(Domain.subdomain == domain.subdomain).first()
+    existing_domain = db.query(Domain).filter(Domain.identifier == domain.identifier).first()
 
     if existing_domain:
            return{
@@ -40,9 +40,30 @@ def create_subdomain(domain: DomainCreate, db: Session = Depends(get_db)):
         "subdomain": domain.subdomain
     }
 
-@app.post("delete/{subdomain}")
-def delete_subdomain(subdomain: str, db: Session = Depends(get_db)):
-    domain_to_delete = db.query(Domain).where(Domain.subdomain == subdomain).first()
+@app.post("/update")
+def update_subdomain(domain: DomainCreate, db: Session = Depends(get_db)):
+
+    existing_domain = db.query(Domain).filter(Domain.identifier == domain.identifier).first()
+
+    # identifier가 존재하지 않는 경우 에러 처리
+    if not existing_domain:
+        return {"error": "Identifier not found"}
+    
+    
+    existing_domain.display_name = domain.display_name
+    existing_domain.subdomain = domain.subdomain
+    db.commit()
+    db.refresh(existing_domain)
+
+    return{
+            "identifier" : existing_domain.identifier,
+            "key" : existing_domain.token,
+            "subdomain" : existing_domain.subdomain
+    }
+
+@app.post("delete/{identifier}")
+def delete_subdomain(identifier: str, db: Session = Depends(get_db)):
+    domain_to_delete = db.query(Domain).where(Domain.identifier == identifier).first()
     
     if not domain_to_delete:
         return {"error" : "subdomain not found"}
@@ -50,7 +71,7 @@ def delete_subdomain(subdomain: str, db: Session = Depends(get_db)):
     db.delete(domain_to_delete)
     db.commit()
        
-    return {"message" : f"Subdomain `{subdomain}` deleted successfully"}
+    return {"message" : f"Subdomain `{domain_to_delete.subdomain}` deleted successfully"}
        
 
 @app.get("/identifier/{identifier}")
