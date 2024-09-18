@@ -20,7 +20,7 @@ def create_subdomain(domain: DomainCreate, db: Session = Depends(get_db)):
            return{
                   "identifier" : existing_domain.identifier,
                   "key" : existing_domain.token,
-                  "sudomain" : existing_domain.subdomain
+                  "subdomain" : existing_domain.subdomain
            }
     
     key = str(uuid4()).replace("-", "")
@@ -39,6 +39,19 @@ def create_subdomain(domain: DomainCreate, db: Session = Depends(get_db)):
         "key": key,
         "subdomain": domain.subdomain
     }
+
+@app.post("delete/{subdomain}")
+def delete_subdomain(subdomain: str, db: Session = Depends(get_db)):
+    domain_to_delete = db.query(Domain).where(Domain.subdomain == subdomain).first()
+    
+    if not domain_to_delete:
+        return {"error" : "subdomain not found"}
+    
+    db.delete(domain_to_delete)
+    db.commit()
+       
+    return {"message" : f"Subdomain `{subdomain}` deleted successfully"}
+       
 
 @app.get("/identifier/{identifier}")
 def get_subdomain(identifier: str, db: Session = Depends(get_db)):
