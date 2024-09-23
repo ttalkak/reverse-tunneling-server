@@ -61,7 +61,7 @@ def update_subdomain(domain: DomainCreate, db: Session = Depends(get_db)):
             "subdomain" : existing_domain.subdomain
     }
 
-@app.post("delete/{identifier}")
+@app.post("/delete/{identifier}")
 def delete_subdomain(identifier: str, db: Session = Depends(get_db)):
     domain_to_delete = db.query(Domain).where(Domain.identifier == identifier).first()
     
