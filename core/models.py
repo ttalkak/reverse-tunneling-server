@@ -9,6 +9,7 @@ class Domain(Base):
     identifier = Column("identifier", String)
     display_name = Column("display_name", String)
     token = Column("token", String)
+    last_tcp_port = Column("last_tcp_port", Integer)
     subdomain = Column("subdomain", String)
     created_at = Column("created_at", TIMESTAMP, default=func.now())
     updated_at = Column("updated_at", TIMESTAMP, default=func.now())

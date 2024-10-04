@@ -40,6 +40,32 @@ def create_subdomain(domain: DomainCreate, db: Session = Depends(get_db)):
         "subdomain": domain.subdomain
     }
 
+@app.post("/db/create")
+def create_subdomain(domain: DomainCreate, db: Session = Depends(get_db)):
+    available_ports = set(range(10000, 20001))
+    used_ports = set(map(lambda x: x.last_tcp_port, db.query(Domain).all()))
+    remaining_ports = available_ports - used_ports
+    random_port = random.choice(list(remaining_ports))
+    
+    key = str(uuid4()).replace("-", "")
+    
+    create = Domain(
+        identifier=domain.identifier, 
+        display_name=domain.display_name,
+        token=key,
+        last_tcp_port=random_port,
+        subdomain=domain.subdomain
+    )
+    db.add(create)
+    db.commit()
+    db.refresh(create)
+    return {
+        "identifier": domain.identifier,
+        "key": key,
+        "subdomain": domain.subdomain,
+        "port": random_port
+    }
+
 @app.post("/update")
 def update_subdomain(domain: DomainCreate, db: Session = Depends(get_db)):
 
