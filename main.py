@@ -9,6 +9,8 @@ from core.models import Domain
 from core.schemas import DomainCreate
 from sqlalchemy import select
 
+import random
+
 app = FastAPI()
 
 @app.post("/create")
