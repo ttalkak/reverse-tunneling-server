@@ -44,6 +44,16 @@ def create_subdomain(domain: DomainCreate, db: Session = Depends(get_db)):
 
 @app.post("/db/create")
 def create_subdomain(domain: DomainCreate, db: Session = Depends(get_db)):
+    existing_domain = db.query(Domain).filter(Domain.identifier == domain.identifier).first()
+
+    if existing_domain:
+        return{
+                "identifier" : existing_domain.identifier,
+                "key" : existing_domain.token,
+                "subdomain" : existing_domain.subdomain,
+                "port": existing_domain.last_tcp_port
+        }
+
     available_ports = set(range(10000, 20001))
     used_ports = set(map(lambda x: x.last_tcp_port, db.query(Domain).all()))
     remaining_ports = available_ports - used_ports
